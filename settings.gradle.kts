@@ -1,0 +1,2 @@
+rootProject.name = "hanja-study-engine"
+
