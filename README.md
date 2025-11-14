@@ -40,6 +40,15 @@
     - [ ] **3항 연산자 미사용**
 - [ ] **JUnit 5 + AssertJ**로 기능 테스트 검증
 
+---
+
+## 디렉터리 구조 (초안)
+    hanja
+    ├─ domain/ (Hanja, HanjaRepository, JsonHanjaRepository)
+    ├─ quiz/   (Quiz, QuestionType, QuizStrategy, RandomQuizStrategy)
+    ├─ study/  (LearningRecord, UserProgress, StudyService)
+    ├─ storage/(ProgressRepository, FileProgressRepository)
+    └─ ui/     (ConsoleApp)
 
 ## 실행
 ```bash
