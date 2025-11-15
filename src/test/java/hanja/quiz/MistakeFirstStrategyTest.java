@@ -25,9 +25,7 @@ class MistakeFirstStrategyTest {
     @Test
     void 오답이_있으면_먼저_선별하고_부족분은_랜덤으로_채운다() {
         UserProgress up = new UserProgress();
-        up.replaceAll(java.util.Map.of(
-                "人", new LearningRecord("人", 1, 0, java.time.LocalDate.now(), false)
-        ));
+        up.recordResult(new Hanja("人","인","사람","8급"), false, java.time.LocalDate.now());
         var strat = new MistakeFirstStrategy(up, new Random(42));
 
         List<Quiz> qs = strat.selectQuizzes(POOL, 3);
