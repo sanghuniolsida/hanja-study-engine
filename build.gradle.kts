@@ -26,4 +26,9 @@ tasks.test {
 
 application {
     mainClass.set("hanja.ui.ConsoleApp")
+    applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
+}
+
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
 }
