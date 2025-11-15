@@ -21,6 +21,18 @@ public class UserProgress {
         recordResult(hanja, correct, LocalDate.now());
     }
 
+
+    public Map<String, LearningRecord> snapshot() {
+        return Collections.unmodifiableMap(byChar);
+    }
+
+    public void replaceAll(Map<String, LearningRecord> snapshot) {
+        byChar.clear();
+        if (snapshot != null) {
+            byChar.putAll(snapshot);
+        }
+    }
+
     public void recordResult(Hanja hanja, boolean correct, LocalDate date) {
         if (hanja == null || date == null) { return; }
         String ch = hanja.getCharacter();
