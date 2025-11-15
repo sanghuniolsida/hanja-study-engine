@@ -7,14 +7,14 @@
 
 ## 기능 목록 (초안)
 - 데이터
-    - [ ] `src/main/resources/hanja-data.json`에서 한자 목록 로드
-    - [ ] `Hanja`, `HanjaRepository`, `JsonHanjaRepository` 구현
+    - [x] `src/main/resources/hanja-data.json`에서 한자 목록 로드
+    - [x] `Hanja`, `HanjaRepository`, `JsonHanjaRepository` 구현
 - 퀴즈
     - [ ] `QuestionType`(HANJA_TO_MEANING / MEANING_TO_HANJA / HANJA_TO_READING)
-    - [ ] `Quiz`(문제 텍스트/채점)
-    - [ ] `QuizStrategy` 인터페이스 + `RandomQuizStrategy`
+    - [x] `Quiz`(문제 텍스트/채점)
+    - [x] `QuizStrategy` 인터페이스 + `RandomQuizStrategy`
 - 학습 진행
-    - [ ] `LearningRecord`, `UserProgress`(정답/오답 기록, 재출제 여부 판정)
+    - [x] `LearningRecord`, `UserProgress`(정답/오답 기록, 재출제 여부 판정)
     - [ ] `StudyService`(오늘 문제 N개 생성)
 - 저장(영속)
     - [ ] `ProgressRepository` 인터페이스
@@ -22,9 +22,9 @@
 - UI
     - [ ] `ConsoleApp`: 문제 N개 출제 → 입력 → 채점 → 저장 → 요약 출력
 - 테스트
-    - [ ] `JsonHanjaRepository` 로딩 테스트
+    - [x] `JsonHanjaRepository` 로딩 테스트
     - [ ] `UserProgress.recordResult / needsReview` 테스트
-    - [ ] `RandomQuizStrategy` 기본 동작 테스트
+    - [x] `RandomQuizStrategy` 기본 동작 테스트
 - 이후 확장(옵션)
     - [ ] `MistakeFirstStrategy`(오답 우선 출제)
     - [ ] 급수/주제별 필터, 일일 목표(OKR) 로그 출력
@@ -32,13 +32,13 @@
 ---
 
 ## 프로그래밍 요구 사항
-- [ ] 기능을 구현하기 전 **README.md에 구현할 기능 목록**을 정리해 추가한다.
-- [ ] **커밋 단위**는 README의 기능 목록 단위로 쪼갠다.
+- [x] 기능을 구현하기 전 **README.md에 구현할 기능 목록**을 정리해 추가한다.
+- [x] **커밋 단위**는 README의 기능 목록 단위로 쪼갠다.
 - [ ] **JDK 21**에서 실행 가능해야 한다. (Gradle toolchain으로 고정)
 - [ ] **자바 코드 컨벤션** 준수 (Java Style Guide 기준)
     - [ ] **인덴트(depth) ≤ 2** 유지
     - [ ] **3항 연산자 미사용**
-- [ ] **JUnit 5 + AssertJ**로 기능 테스트 검증
+- [x] **JUnit 5 + AssertJ**로 기능 테스트 검증
 
 ---
 
