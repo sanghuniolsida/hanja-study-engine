@@ -10,9 +10,14 @@ public class LearningRecord {
     private LocalDate lastReviewed;
     private boolean lastCorrect;
 
+
+    public LearningRecord(String character) {
+        this(character, 0, 0, null, false);
+    }
+
     public LearningRecord(String character, int attempts, int correct,
-                          java.time.LocalDate lastReviewed, boolean lastCorrect) {
-        this.character = java.util.Objects.requireNonNull(character, "character");
+                          LocalDate lastReviewed, boolean lastCorrect) {
+        this.character = Objects.requireNonNull(character, "character");
         this.attempts = Math.max(0, attempts);
         this.correct = Math.max(0, Math.min(this.attempts, correct));
         this.lastReviewed = lastReviewed;
