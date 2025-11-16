@@ -10,23 +10,24 @@
     - [x] `src/main/resources/hanja-data.json`에서 한자 목록 로드
     - [x] `Hanja`, `HanjaRepository`, `JsonHanjaRepository` 구현
 - 퀴즈
-    - [ ] `QuestionType`(HANJA_TO_MEANING / MEANING_TO_HANJA / HANJA_TO_READING)
+    - [x] `QuestionType`(HANJA_TO_MEANING / MEANING_TO_HANJA / HANJA_TO_READING)
     - [x] `Quiz`(문제 텍스트/채점)
     - [x] `QuizStrategy` 인터페이스 + `RandomQuizStrategy`
+    - [x] `MistakeFirstStrategy` (오답 우선 출제)
 - 학습 진행
     - [x] `LearningRecord`, `UserProgress`(정답/오답 기록, 재출제 여부 판정)
-    - [ ] `StudyService`(오늘 문제 N개 생성)
+    - [x] `StudyService`
 - 저장(영속)
-    - [ ] `ProgressRepository` 인터페이스
-    - [ ] `FileProgressRepository`(JSON/텍스트 저장, 폴더 자동 생성)
+    - [x] `ProgressRepository` 인터페이스
+    - [x] `FileProgressRepository`(JSON/텍스트 저장)
 - UI
     - [ ] `ConsoleApp`: 문제 N개 출제 → 입력 → 채점 → 저장 → 요약 출력
 - 테스트
     - [x] `JsonHanjaRepository` 로딩 테스트
-    - [ ] `UserProgress.recordResult / needsReview` 테스트
+    - [x] `UserProgress.recordResult / needsReview` 테스트
     - [x] `RandomQuizStrategy` 기본 동작 테스트
+    - [x] `MistakeFirstStrategy` 오답 우선
 - 이후 확장(옵션)
-    - [ ] `MistakeFirstStrategy`(오답 우선 출제)
     - [ ] 급수/주제별 필터, 일일 목표(OKR) 로그 출력
 
 ---
@@ -45,10 +46,23 @@
 ## 디렉터리 구조 (초안)
     hanja
     ├─ domain/ (Hanja, HanjaRepository, JsonHanjaRepository)
-    ├─ quiz/   (Quiz, QuestionType, QuizStrategy, RandomQuizStrategy)
+    ├─ quiz/   (Quiz, QuestionType, QuizStrategy, RandomQuizStrategy, MistakeFirstStrategy)
     ├─ study/  (LearningRecord, UserProgress, StudyService)
     ├─ storage/(ProgressRepository, FileProgressRepository)
     └─ ui/     (ConsoleApp)
+
+---
+
+## 데이터 포맷 (JSON)
+src/main/resources/hanja-data.json
+
+    [
+    { "character": "一", "reading": "일", "meaning": "하나", "level": "8급" },
+    { "character": "二", "reading": "이", "meaning": "둘",  "level": "8급" },
+    { "character": "人", "reading": "인", "meaning": "사람", "level": "8급" }
+    ]
+
+    필드: character(한자), reading(독음), meaning(뜻), level(급수)
 
 ## 실행
 ```bash
