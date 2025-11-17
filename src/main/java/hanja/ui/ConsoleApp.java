@@ -81,7 +81,7 @@ public class ConsoleApp {
 
             int correct = 0;
             for (Quiz q : quizzes) {
-                System.out.println(q.prompt());
+                System.out.println("[" + q.hanja().getLevel() + "] " + q.prompt());
                 String ans = sc.hasNextLine() ? sc.nextLine() : null;
                 if (ans == null) {
                     System.out.println("\n(입력이 감지되지 않아 세션을 종료합니다)");
