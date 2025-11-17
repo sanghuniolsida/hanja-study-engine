@@ -32,3 +32,7 @@ application {
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
 }
+
+tasks.named<JavaExec>("run") {
+    standardInput = System.`in`
+}
