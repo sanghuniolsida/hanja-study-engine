@@ -16,39 +16,39 @@ public class ConsoleApp {
 
     enum Mode { MEANING, READING, MIX }
     private static final long ANSWER_TIMEOUT_SEC = 30;
+
     public static void main(String[] args) {
         forceUtf8Console();
 
-        // === 초기 프롬프트: 급수/문항/모드 선택 ===
         List<String> levels;
         int count = 20;
         Mode mode = Mode.MEANING;
 
-        try (Scanner sc = new Scanner(System.in, StandardCharsets.UTF_8)) {
-            System.out.print("학습 급수 입력 (예: 8급 또는 7급,8급, 비우면 전체): ");
-            String lvRaw = sc.hasNextLine() ? sc.nextLine().trim() : "";
-            levels = lvRaw.isEmpty()
-                    ? List.of()
-                    : Arrays.stream(lvRaw.split(","))
-                    .map(String::trim).filter(s -> !s.isEmpty()).toList();
+        Scanner sc = new Scanner(System.in, StandardCharsets.UTF_8);
 
-            System.out.print("문항 수 입력 (기본 20): ");
-            if (sc.hasNextLine()) {
-                String nRaw = sc.nextLine().trim();
-                if (!nRaw.isEmpty()) {
-                    try { count = Math.max(1, Integer.parseInt(nRaw)); } catch (NumberFormatException ignore) {}
-                }
-            }
+        System.out.print("학습 급수 입력 (예: 8급 또는 7급,8급, 비우면 전체): ");
+        String lvRaw = sc.hasNextLine() ? sc.nextLine().trim() : "";
+        levels = lvRaw.isEmpty()
+                ? List.of()
+                : Arrays.stream(lvRaw.split(","))
+                .map(String::trim).filter(s -> !s.isEmpty()).toList();
 
-            System.out.print("모드 선택 [1] 뜻  [2] 음(독음)  [3] 섞어서  (기본 1): ");
-            if (sc.hasNextLine()) {
-                String mRaw = sc.nextLine().trim();
-                mode = switch (mRaw) {
-                    case "2" -> Mode.READING;
-                    case "3" -> Mode.MIX;
-                    default  -> Mode.MEANING;
-                };
+        System.out.print("문항 수 입력 (기본 20): ");
+        if (sc.hasNextLine()) {
+            String nRaw = sc.nextLine().trim();
+            if (!nRaw.isEmpty()) {
+                try { count = Math.max(1, Integer.parseInt(nRaw)); } catch (NumberFormatException ignore) {}
             }
+        }
+
+        System.out.print("모드 선택 [1] 뜻  [2] 음(독음)  [3] 섞어서  (기본 1): ");
+        if (sc.hasNextLine()) {
+            String mRaw = sc.nextLine().trim();
+            mode = switch (mRaw) {
+                case "2" -> Mode.READING;
+                case "3" -> Mode.MIX;
+                default  -> Mode.MEANING;
+            };
         }
 
         var repo = new JsonHanjaRepository();
@@ -83,6 +83,7 @@ public class ConsoleApp {
             quizzes.add(new Quiz(h, type));
         }
 
+        // === 풀이 루프 (카운트다운 + 'exit' 종료) ===
         int correct = 0;
         try (AsyncLineReader in = new AsyncLineReader(System.in, StandardCharsets.UTF_8)) {
             TimedPrompt countdown = new TimedPrompt(System.out, 100);
