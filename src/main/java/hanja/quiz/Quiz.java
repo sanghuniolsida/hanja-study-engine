@@ -3,6 +3,8 @@ package hanja.quiz;
 import hanja.domain.Hanja;
 import java.util.Objects;
 
+import static hanja.util.AnswerNormalizer.normalize;
+
 public class Quiz {
     private final Hanja hanja;
     private final QuestionType type;
@@ -31,10 +33,5 @@ public class Quiz {
             case HANJA_TO_READING -> hanja.getReading();
         };
         return normalize(answer).equals(normalize(expected));
-    }
-
-    private String normalize(String s) {
-        // 현재는 trim만. (영문 소문자화/공백 통일 등은 추후 확장)
-        return s.trim();
     }
 }
