@@ -127,10 +127,10 @@ public class HanjaFXApp extends Application {
     private VBox buildHome() {
         if (homePane != null) return homePane;
 
-        Label title = new Label("한자 학습 엔진");
+        Label title = new Label("한자 쏙!쏙!");
         title.getStyleClass().add("question");
 
-        Label desc = new Label("원하는 기능을 선택하세요");
+        Label desc = new Label("원하는 학습을 선택하세요");
         desc.getStyleClass().add("counter");
 
         Button quizBtn = new Button("한자 퀴즈 시작");
@@ -144,8 +144,9 @@ public class HanjaFXApp extends Application {
         quizBtn.setOnAction(e -> show(Screen.QUIZ));
         cardsBtn.setOnAction(e -> show(Screen.CARDS));
 
-        VBox buttons = new VBox(10, quizBtn, cardsBtn);
-        buttons.setFillWidth(true);
+        HBox buttons = new HBox(12, quizBtn, cardsBtn);
+        HBox.setHgrow(quizBtn, Priority.ALWAYS);
+        HBox.setHgrow(cardsBtn, Priority.ALWAYS);
 
         VBox box = new VBox(12, title, desc, buttons);
         box.getStyleClass().add("card");
@@ -397,21 +398,14 @@ public class HanjaFXApp extends Application {
         cardsCounter = new Label("0 / 0");
         cardsCounter.getStyleClass().add("counter");
 
-        AnchorPane overlay = new AnchorPane();
-        HBox navRight = new HBox(8, prevBtn, nextBtn);
-        navRight.setAlignment(Pos.CENTER_RIGHT);
-        AnchorPane.setRightAnchor(navRight, 8.0);
-        AnchorPane.setBottomAnchor(navRight, 8.0);
+        Pane navSpacer = new Pane();
+        HBox.setHgrow(navSpacer, Priority.ALWAYS);
+        HBox nav = new HBox(8, cardsCounter, navSpacer, prevBtn, nextBtn);
+        nav.setAlignment(Pos.CENTER_LEFT);
 
-        Label counterLeft = cardsCounter;
-        AnchorPane.setLeftAnchor(counterLeft, 8.0);
-        AnchorPane.setBottomAnchor(counterLeft, 8.0);
+        cardArea = new StackPane(cardStack);
 
-        overlay.getChildren().addAll(counterLeft, navRight);
-
-        cardArea = new StackPane(cardStack, overlay);
-
-        VBox layout = new VBox(12, new Label("낱말 카드"), topBar, cardArea);
+        VBox layout = new VBox(12, new Label("낱말 카드"), topBar, cardArea, nav);
         ((Label)layout.getChildren().get(0)).getStyleClass().add("title");
         layout.setPadding(new Insets(16));
 
