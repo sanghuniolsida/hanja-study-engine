@@ -16,24 +16,29 @@
     - [x] `Quiz`(문제 텍스트/채점)
     - [x] `QuizStrategy` 인터페이스 + `RandomQuizStrategy`
     - [x] `MistakeFirstStrategy` (오답 우선 출제)
+    - [x] 제한 시간(기본 30초) 진행바/남은 시간 표시
+    - [x] `exit` 입력 시 즉시 종료
+    - [x] 퀴즈 종료 시 오답 요약 팝업/출력
 - 학습 진행
     - [x] `LearningRecord`, `UserProgress`(정답/오답 기록, 재출제 여부 판정)
     - [x] `StudyService`
 - 저장(영속)
     - [x] `ProgressRepository` 인터페이스
     - [x] `FileProgressRepository`(JSON/텍스트 저장)
-- UI
+- UI(콘솔)
     - [x] 인터랙티브 시작 프롬프트: 급수(복수 선택)/문항 수/모드(뜻·음·섞기)
     - [x] 문제당 30초 타이머 + 카운트다운 표시
     - [x] `exit` 입력 시 즉시 종료
-    - [x]  GUI(JavaFX): HanjaFXApp (다크 모드/타임바/칩 UI)
+-GUI(JavaFX)
+    - [x] 제목/설명 카드와 선택 버튼 카드 두 섹션으로 분리
+    - [x] 급수 드롭다운으로 필터
+    - [x] 카드 클릭 시 앞/뒷면 플립 애니메이션
+    - [x] 이전, 다음 버튼 양 끝에서 순환 이동
 - 테스트
     - [x] `JsonHanjaRepository` 로딩 테스트
     - [x] `UserProgress.recordResult / needsReview` 테스트
     - [x] `RandomQuizStrategy` 기본 동작 테스트
     - [x] `MistakeFirstStrategy` 오답 우선
-- 이후 확장(옵션)
-    - [ ] 급수/주제별 필터, 일일 목표(OKR) 로그 출력
 
 ---
 
@@ -82,20 +87,14 @@ src/main/resources/hanja-data.json
 
 ## 실행
 
-① 콘솔 모드
-
-    ./gradlew run
-
-② GUI(JavaFX)
+GUI(JavaFX)
 
     ./gradlew runGui
 
 ### 흐름
 
-1. 급수 입력 → 예: 8급 또는 7급,8급 (비우면 전체)
-2. 문항 수 → 기본 20
-3. 모드 선택 → [1] 뜻 / [2] 음(독음) / [3] 섞어서
-4. 풀이 중: 한 문제당 30초 카운트다운 표시, exit로 중도 종료
-5. 세션 종료 시 오답 요약 출력 → 정답/내 답/급수/문항 유형
+1. `한자 퀴즈 시작`, `낱말 카드 보기` 중 원하는 학습 방법 선택
+2. `한자 퀴즈 시작` → 급수 입력(예: 7급, 8급) → 문항수 입력 → 모드 선택(뜻,음,섞어서) → 시작 
+3. `낱말 카드 보기` → 급수 선택(드롭다운) → 낱말 카드 선택 시(한자, 뜻/음 변환) → 이전,다음 버튼으로 이동
 
 - Windows 터미널: 한글 깨짐 시 chcp 65001 후 실행.
