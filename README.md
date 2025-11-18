@@ -8,7 +8,7 @@
 - 출제 규칙은 전략(Strategy)으로 교체 가능
 - (선택) JavaFX GUI 지원 + 다크 모드
 
-## 기능 목록 (초안)
+## 기능 목록
 - 데이터
     - [x] `src/main/resources/hanja-data.json`에서 한자 목록 로드
     - [x] `Hanja`, `HanjaRepository`, `JsonHanjaRepository` 구현
@@ -51,7 +51,7 @@
 
 ---
 
-## 디렉터리 구조 (초안)
+## 디렉터리 구조 
     hanja
     ├─ domain/    (Hanja, HanjaRepository, JsonHanjaRepository)
     ├─ quiz/      (Quiz, QuestionType, QuizStrategy, RandomQuizStrategy, MistakeFirstStrategy)
@@ -101,31 +101,43 @@ GUI(JavaFX)
 
 ## 사용 방법
 
-1. `홈`
+1. **홈**
+한자 학습 엔진인 `한자 쏙!쏙!`에서 두 가지 학습 방법 중 하나를 선택.
 ![메인 화면](images/home.png)
 
-2. `한자 퀴즈 시작`
+2. **한자 퀴즈 시작**
+학습하고자 하는 한자 급수와 문항 개수, 모드를 선택.
+※ 급수 입력은 다음과 같은 형태로 입력 → 7급, 8급
 ![한자 퀴즈 화면](images/hanjaquiz.png)
 
-3. `한자 퀴즈`
+3. **한자 퀴즈**
+정답을 입력하거나 `exit` 입력 또는 종료 버튼 클릭시 종료.
 ![한자 퀴즈 화면](images/quiz.png) 
 
-4. `한자 퀴즈 오답`
+4. **한자 퀴즈 오답**
+퀴즈 풀이가 끝난 후, 정리된 오답을 통해 재학습.
 ![한자 퀴즈 화면](images/miscorrect.png)
 
-5. `낱말 카드 (한자)`
+5. **낱말 카드 (한자)**
+학습하고자 하는 한자 급수 선택 후, 낱말 카드로 학습.
 ![낱칼 카드 화면1](images/hanjacard1.png)
 
-6. `낱말 카드 (뜻/음)`
+6. **낱말 카드 (뜻/음)**
+낱말 카드 클릭시 카드가 회전하며 뜻/음 제공.
 ![낱칼 카드 화면2](images/hanjacard2.png)
 
-7. `다크 모드`
+7. **다크 모드**
+사용자 취향에 따라 `light` 또는 `dark` 모드 변경.
 ![다크 모드](images/darkmode.png)
 
 
 ---
+# 👐오픈 미션
 
-# 💻 왜 한자 학습 엔진 프로젝트를 했는가?
+## 목표
+오픈 미션 기간동안 기획부터 개발까지 몰입하고, 개발한 엔진을 통해 학습 후 기간 내에 실제 한자 급수 자격증 취득을 목표로합니다.
+
+## 💻 왜 한자 학습 엔진 프로젝트를 했는가?
 
 - 2주 몰입(마이크로 스프린트)과 객체지향 연습에 정확히 들어맞는 주제라고 판단했습니다.
 
