@@ -487,18 +487,26 @@ public class HanjaFXApp extends Application {
 
     private void showCard(int nextIndex, boolean animate) {
         if (cardList.isEmpty()) return;
-        if (nextIndex < 0 || nextIndex >= cardList.size()) return;
-        cardIndex = nextIndex;
+        int n = cardList.size();
+        int wrapped = ((nextIndex % n) + n) % n;
+        boolean changed = wrapped != cardIndex;
+        cardIndex = wrapped;
         showingBack = false;
-        if (animate) slide(cardStack);
+        if (animate && changed) slide(cardStack);
         refreshCard();
         updateNavButtons();
         saveCardState();
     }
 
     private void updateNavButtons() {
-        prevBtn.setDisable(cardIndex <= 0);
-        nextBtn.setDisable(cardIndex >= cardList.size() - 1);
+        if (cardList.isEmpty()) {
+            prevBtn.setDisable(true);
+            nextBtn.setDisable(true);
+            return;
+        }
+        boolean single = cardList.size() == 1;
+        prevBtn.setDisable(single);
+        nextBtn.setDisable(single);
     }
 
     private Node buildFront(Hanja h) {
