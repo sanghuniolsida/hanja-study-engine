@@ -5,6 +5,7 @@
 - 30초 카운트다운 타이머 + exit로 중도 종료
 - 세션 종료 시 오답 요약 일괄 출력
 - 출제 규칙은 전략(Strategy)으로 교체 가능
+- (선택) JavaFX GUI 지원 + 다크 모드
 
 ## 기능 목록 (초안)
 - 데이터
@@ -25,6 +26,7 @@
     - [x] 인터랙티브 시작 프롬프트: 급수(복수 선택)/문항 수/모드(뜻·음·섞기)
     - [x] 문제당 30초 타이머 + 카운트다운 표시
     - [x] `exit` 입력 시 즉시 종료
+    - [x]  GUI(JavaFX): HanjaFXApp (다크 모드/타임바/칩 UI)
 - 테스트
     - [x] `JsonHanjaRepository` 로딩 테스트
     - [x] `UserProgress.recordResult / needsReview` 테스트
@@ -59,7 +61,10 @@
         ├─ config/  (SessionConfig)                                // 세션 설정 값
         ├─ session/ (SessionRunner, Attempt, SessionResult)        // 세션 실행/결과
         └─ view/    (ReviewPrinter)                                // 오답 요약 출력
-
+    └─ gui/
+        └─ HanjaFXApp.java                                    // JavaFX GUI
+    resources/
+    └─ ui/styles.css                                         // GUI 스타일/다크 모드
 ---
 
 ## 데이터 포맷 (JSON)
@@ -76,8 +81,14 @@ src/main/resources/hanja-data.json
 ---
 
 ## 실행
-    ```bash
+
+① 콘솔 모드
+
     ./gradlew run
+
+② GUI(JavaFX)
+
+    ./gradlew runGui
 
 ### 흐름
 
