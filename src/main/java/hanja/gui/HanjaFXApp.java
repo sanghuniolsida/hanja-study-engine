@@ -22,6 +22,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -47,10 +48,15 @@ public class HanjaFXApp extends Application {
     private VBox settingsPane;
     private VBox quizPane;
     private Label quizLabel, timerLabel, counterLabel, levelChip, typeChip;
-    private TextField answerField;
+    private TextField levelsField;
+    private Spinner<Integer> countSpinner;
+    private ComboBox<Mode> modeCombo;
+    private Spinner<Integer> timeoutSpinner;
     private Button startBtn, submitBtn, exitBtn;
     private ProgressBar timeBar;
     private final DoubleProperty timeProgress = new SimpleDoubleProperty(1.0);
+
+    private TextField answerField;
 
     private List<Quiz> quizzes = List.of();
     private List<Attempt> attempts = new ArrayList<>();
@@ -58,7 +64,6 @@ public class HanjaFXApp extends Application {
     private Timeline timeline;
     private int remainSec;
 
-    // ---- CARDS ----
     private VBox cardsRoot;
     private FlowPane levelToggles;
     private Button cardsStartBtn;
@@ -181,22 +186,30 @@ public class HanjaFXApp extends Application {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         HBox statusStrip = new HBox(12, chips, spacer, counterLabel, timeBar);
 
-        var levelsField = new TextField();
+        levelsField = new TextField();
         levelsField.setPromptText("예: 8급 또는 7급,8급 (비우면 전체)");
 
-        var countSpinner = new Spinner<>(1, 200, 20); countSpinner.setEditable(true);
-        var modeCombo    = new ComboBox<Mode>();
+        answerField = new TextField();
+        answerField.getStyleClass().add("text-input");
+        answerField.setPromptText("정답을 입력하세요 (exit 입력 시 종료)");
+
+        countSpinner = new Spinner<Integer>(1, 200, 20);
+        countSpinner.setEditable(true);
+
+        modeCombo = new ComboBox<>();
         modeCombo.getItems().addAll(Mode.MEANING, Mode.READING, Mode.MIX);
         modeCombo.getSelectionModel().select(Mode.MEANING);
 
-        var timeoutSpinner = new Spinner<>(5, 300, 30); timeoutSpinner.setEditable(true);
+        timeoutSpinner = new Spinner<Integer>(5, 300, 30);
+        timeoutSpinner.setEditable(true);
+
         startBtn = new Button("시작");
 
         GridPane grid = new GridPane();
         grid.setHgap(8); grid.setVgap(8);
-        grid.add(new Label("급수"), 0, 0);      grid.add(levelsField, 1, 0);
-        grid.add(new Label("문항 수"), 0, 1);    grid.add(countSpinner, 1, 1);
-        grid.add(new Label("모드"), 0, 2);      grid.add(modeCombo, 1, 2);
+        grid.add(new Label("급수"), 0, 0);      grid.add(levelsField,    1, 0);
+        grid.add(new Label("문항 수"), 0, 1);    grid.add(countSpinner,   1, 1);
+        grid.add(new Label("모드"), 0, 2);      grid.add(modeCombo,      1, 2);
         grid.add(new Label("제한(초)"), 0, 3);  grid.add(timeoutSpinner, 1, 3);
         grid.add(startBtn, 1, 4);
 
@@ -353,6 +366,8 @@ public class HanjaFXApp extends Application {
 
     /* ---------------- CARDS ---------------- */
     private VBox buildCardsScreen() {
+        if (cardsRoot != null) return cardsRoot;
+
         if (allData.isEmpty()) {
             var repo = new JsonHanjaRepository();
             allData = repo.findAll();
@@ -634,6 +649,7 @@ public class HanjaFXApp extends Application {
     }
 
     private static int safeInt(Integer v, int def) { return v == null ? def : v; }
+    private static int safeInt(Object v, int def) { return (v instanceof Integer i) ? i : def; }
 
     private void updateTimerLabel() { timerLabel.setText("남은 시간: " + remainSec + "초"); }
 
@@ -656,6 +672,13 @@ public class HanjaFXApp extends Application {
         String old = node.getStyle();
         node.setStyle("-fx-background-color: rgba(22,163,74,0.15); -fx-background-radius: 12; -fx-border-radius: 12;");
         new Timeline(new KeyFrame(Duration.millis(250), e -> node.setStyle(old))).play();
+    }
+
+    private void slide(Node node) {
+        TranslateTransition t = new TranslateTransition(Duration.millis(200), node);
+        t.setFromX(24);
+        t.setToX(0);
+        t.play();
     }
 
     public static void main(String[] args) { launch(args); }
