@@ -9,6 +9,7 @@ import hanja.ui.config.SessionConfig.Mode;
 import hanja.ui.session.Attempt;
 
 import javafx.animation.KeyFrame;
+import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
@@ -16,6 +17,7 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -52,6 +54,21 @@ public class HanjaFXApp extends Application {
     private Timeline timeline;
     private int remainSec;
 
+    private VBox cardsRoot;
+    private FlowPane levelToggles;
+    private Button cardsStartBtn;
+    private StackPane cardStack;
+    private BorderPane cardBox;
+    private Button prevBtn, nextBtn, homeBtn;
+    private Label cardsCounter;
+
+    private List<Hanja> allData = List.of();
+    private List<String> availableLevels = List.of();
+    private List<Hanja> cardList = List.of();
+    private int cardIndex = 0;
+    private boolean showingBack = false;
+    private Node frontNode, backNode;
+
     @Override
     public void start(Stage stage) {
         stage.setTitle("한자 학습 엔진 (JavaFX)");
@@ -71,7 +88,7 @@ public class HanjaFXApp extends Application {
         root = new VBox(12, header, contentRoot);
         root.setPadding(new Insets(16));
 
-        Scene scene = new Scene(root, 760, 520);
+        Scene scene = new Scene(root, 820, 560);
         URL css = getClass().getResource("/ui/styles.css");
         if (css != null) scene.getStylesheets().add(css.toExternalForm());
 
@@ -91,7 +108,7 @@ public class HanjaFXApp extends Application {
         switch (target) {
             case HOME  -> contentRoot.getChildren().add(buildHome());
             case QUIZ  -> contentRoot.getChildren().add(buildQuizScreen());
-            case CARDS -> contentRoot.getChildren().add(buildCardsPlaceholder());
+            case CARDS -> contentRoot.getChildren().add(buildCardsScreen());
         }
     }
 
@@ -133,7 +150,6 @@ public class HanjaFXApp extends Application {
 
     /* ---------- QUIZ 화면 ---------- */
     private VBox buildQuizScreen() {
-
         levelChip = chip("급수");
         typeChip  = chip("유형");
         counterLabel = new Label("Q 0 / 0");
@@ -175,6 +191,7 @@ public class HanjaFXApp extends Application {
         settingsPane = new VBox(10, new Label("세션 설정"), grid);
         settingsPane.getStyleClass().add("card");
         settingsPane.setPadding(new Insets(16));
+
 
         quizLabel = new Label("여기에 문제가 표시됩니다");
         quizLabel.getStyleClass().add("question");
@@ -239,26 +256,180 @@ public class HanjaFXApp extends Application {
         nextQuestion(cfg.timeoutSec());
     }
 
-    /* ---------- 낱말 카드 화면 ---------- */
-    private VBox buildCardsPlaceholder() {
-        VBox box = new VBox(10);
+    /* ---------- CARDS 화면 구현 ---------- */
+    private VBox buildCardsScreen() {
+        if (allData.isEmpty()) {
+            var repo = new JsonHanjaRepository();
+            allData = repo.findAll();
+            availableLevels = allData.stream().map(Hanja::getLevel).distinct()
+                    .sorted(Comparator.naturalOrder()).toList();
+        }
+
+        levelToggles = new FlowPane(8, 8);
+        levelToggles.setPrefWrapLength(600);
+        for (String lv : availableLevels) {
+            ToggleButton t = new ToggleButton(lv);
+            t.getStyleClass().add("chip");
+            t.setUserData(lv);
+            levelToggles.getChildren().add(t);
+        }
+        cardsStartBtn = new Button("시작하기");
+        cardsStartBtn.getStyleClass().add("primary-btn");
+
+        HBox header = new HBox(10, levelToggles, cardsStartBtn);
+        header.setAlignment(Pos.CENTER_LEFT);
+
+        cardStack = new StackPane();
+        cardStack.setMinSize(300, 220);
+        cardStack.setPrefSize(420, 300);
+        cardStack.setMaxWidth(520);
+        cardStack.getStyleClass().add("card");
+        cardStack.setPadding(new Insets(24));
+        cardStack.setOnMouseClicked(e -> flipCard());
+
+        frontNode = buildFront(null);
+        backNode  = buildBack(null);
+        cardStack.getChildren().setAll(frontNode, backNode);
+        backNode.setVisible(false);
+
+        prevBtn = new Button("← 이전");
+        nextBtn = new Button("다음 →");
+        homeBtn = new Button("홈으로");
+        homeBtn.getStyleClass().add("danger-btn");
+        prevBtn.setDisable(true); nextBtn.setDisable(true);
+
+        cardsCounter = new Label("0 / 0");
+        cardsCounter.getStyleClass().add("counter");
+        Pane spacer = new Pane(); HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox nav = new HBox(8, prevBtn, nextBtn, spacer, cardsCounter, homeBtn);
+        nav.setAlignment(Pos.CENTER_LEFT);
+
+        VBox layout = new VBox(12, new Label("낱말 카드"), header, cardStack, nav);
+        ((Label)layout.getChildren().get(0)).getStyleClass().add("title");
+        layout.setPadding(new Insets(16));
+
+        cardsRoot = new VBox(layout);
+        cardsRoot.setFillWidth(true);
+
+        cardsStartBtn.setOnAction(e -> startCards());
+        prevBtn.setOnAction(e -> showCard(cardIndex - 1, true));
+        nextBtn.setOnAction(e -> showCard(cardIndex + 1, true));
+        homeBtn.setOnAction(e -> show(Screen.HOME));
+
+        return cardsRoot;
+    }
+
+    private void startCards() {
+        Set<String> selected = levelToggles.getChildren().stream()
+                .filter(n -> n instanceof ToggleButton tb && tb.isSelected())
+                .map(n -> (String) n.getUserData())
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        if (selected.isEmpty()) {
+            cardList = new ArrayList<>(allData);
+        } else {
+            cardList = allData.stream().filter(h -> selected.contains(h.getLevel()))
+                    .collect(Collectors.toList());
+        }
+
+        if (cardList.isEmpty()) {
+            showAlert(Alert.AlertType.INFORMATION, "데이터 없음", "선택한 급수의 한자가 없습니다.");
+            return;
+        }
+
+        cardList.sort(Comparator.comparing(Hanja::getCharacter));
+
+        cardIndex = 0;
+        showingBack = false;
+        refreshCard();
+        updateNavButtons();
+    }
+
+    private void refreshCard() {
+        if (cardList.isEmpty()) {
+            cardsCounter.setText("0 / 0");
+            prevBtn.setDisable(true); nextBtn.setDisable(true);
+            return;
+        }
+        Hanja h = cardList.get(cardIndex);
+        frontNode = buildFront(h);
+        backNode  = buildBack(h);
+
+        cardStack.getChildren().setAll(frontNode, backNode);
+        frontNode.setVisible(!showingBack);
+        backNode.setVisible(showingBack);
+
+        cardsCounter.setText((cardIndex + 1) + " / " + cardList.size());
+    }
+
+    private void showCard(int nextIndex, boolean animate) {
+        if (cardList.isEmpty()) return;
+        if (nextIndex < 0 || nextIndex >= cardList.size()) return;
+        cardIndex = nextIndex;
+        showingBack = false;
+        if (animate) slide(cardStack);
+        refreshCard();
+        updateNavButtons();
+    }
+
+    private void updateNavButtons() {
+        prevBtn.setDisable(cardIndex <= 0);
+        nextBtn.setDisable(cardIndex >= cardList.size() - 1);
+    }
+
+    private Node buildFront(Hanja h) {
+        VBox box = new VBox(8);
         box.setAlignment(Pos.CENTER);
-        box.setPadding(new Insets(24));
-        box.getStyleClass().add("card");
-
-        Label title = new Label("낱말 카드 (준비 중)");
-        title.getStyleClass().add("question");
-        Label hint = new Label("다음 단계에서 급수 토글 + 카드 플립 + 이전/다음 네비게이션을 추가합니다.");
+        Label lv = new Label(h == null ? "-" : "[" + h.getLevel() + "]");
+        lv.getStyleClass().add("counter");
+        Label ch = new Label(h == null ? "—" : h.getCharacter());
+        ch.setStyle("-fx-font-size: 64px; -fx-font-weight: bold;");
+        Label hint = new Label("카드를 클릭하면 뜻/음을 보여줍니다");
         hint.getStyleClass().add("counter");
-
-        Button back = new Button("← 홈으로");
-        back.setOnAction(e -> show(Screen.HOME));
-
-        box.getChildren().addAll(title, hint, back);
+        box.getChildren().addAll(lv, ch, hint);
         return box;
     }
 
-    /* ---------- 퀴즈 로직(기존) ---------- */
+    private Node buildBack(Hanja h) {
+        VBox box = new VBox(10);
+        box.setAlignment(Pos.CENTER);
+        Label ch = new Label(h == null ? "—" : h.getCharacter());
+        ch.setStyle("-fx-font-size: 42px; -fx-font-weight: bold;");
+
+        Label reading = new Label(h == null ? "-" : "음: " + h.getReading());
+        Label meaning = new Label(h == null ? "-" : "뜻: " + h.getMeaning());
+        reading.getStyleClass().add("title");
+        meaning.getStyleClass().add("title");
+
+        Label tip = new Label("다시 클릭하면 앞면으로 돌아갑니다");
+        tip.getStyleClass().add("counter");
+
+        box.getChildren().addAll(ch, reading, meaning, tip);
+        return box;
+    }
+
+    private void flipCard() {
+        if (cardList.isEmpty()) return;
+        ScaleTransition out = new ScaleTransition(Duration.millis(140), cardStack);
+        out.setFromX(1); out.setToX(0);
+        out.setOnFinished(e -> {
+            showingBack = !showingBack;
+            frontNode.setVisible(!showingBack);
+            backNode.setVisible(showingBack);
+
+            ScaleTransition in = new ScaleTransition(Duration.millis(140), cardStack);
+            in.setFromX(0); in.setToX(1);
+            in.play();
+        });
+        out.play();
+    }
+
+    private void slide(Region node) {
+        TranslateTransition tt = new TranslateTransition(Duration.millis(180), node);
+        tt.setFromX(18); tt.setToX(0); tt.play();
+    }
+
+    /* ---------- 퀴즈 로직 ---------- */
     private void nextQuestion(long timeoutSec) {
         if (idx >= quizzes.size()) { finishSession(false); return; }
 
@@ -310,7 +481,7 @@ public class HanjaFXApp extends Application {
         else { showToast("✅ 정답!"); flashGreen(quizPane); }
 
         idx++;
-        nextQuestion(Math.max(5, remainSec)); // 다음 문제는 설정값 재적용 가능
+        nextQuestion(Math.max(5, remainSec));
     }
 
     private void finishSession(boolean exitedEarly) {
