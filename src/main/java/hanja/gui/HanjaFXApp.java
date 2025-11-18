@@ -22,7 +22,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -55,7 +54,6 @@ public class HanjaFXApp extends Application {
     private Button startBtn, submitBtn, exitBtn;
     private ProgressBar timeBar;
     private final DoubleProperty timeProgress = new SimpleDoubleProperty(1.0);
-
     private TextField answerField;
 
     private List<Quiz> quizzes = List.of();
@@ -65,11 +63,8 @@ public class HanjaFXApp extends Application {
     private int remainSec;
 
     private VBox cardsRoot;
-    private FlowPane levelToggles;
-    private Button cardsStartBtn;
-    private CheckBox favOnlyCheck;
-    private ToggleButton favToggleBtn;
-
+    private ComboBox<String> levelCombo;
+    private StackPane cardArea;
     private StackPane cardStack;
     private Button prevBtn, nextBtn, homeBtn;
     private Label cardsCounter;
@@ -83,7 +78,6 @@ public class HanjaFXApp extends Application {
     private Node frontNode, backNode;
 
     private final CardStateRepository cardRepo = new FileCardStateRepository();
-    private final Set<String> favorites = new LinkedHashSet<>();
 
     @Override
     public void start(Stage stage) {
@@ -119,9 +113,6 @@ public class HanjaFXApp extends Application {
         scene.addEventFilter(KeyEvent.KEY_PRESSED, this::handleGlobalKeys);
 
         show(Screen.HOME);
-        CardState st = cardRepo.load();
-        favorites.clear();
-        favorites.addAll(st.favorites());
     }
 
     private void show(Screen target) {
@@ -133,7 +124,6 @@ public class HanjaFXApp extends Application {
         }
     }
 
-    /* ---------------- HOME ---------------- */
     private VBox buildHome() {
         if (homePane != null) return homePane;
 
@@ -169,7 +159,6 @@ public class HanjaFXApp extends Application {
         return homePane;
     }
 
-    /* ---------------- QUIZ ---------------- */
     private VBox buildQuizScreen() {
         levelChip = chip("급수");
         typeChip  = chip("유형");
@@ -193,14 +182,14 @@ public class HanjaFXApp extends Application {
         answerField.getStyleClass().add("text-input");
         answerField.setPromptText("정답을 입력하세요 (exit 입력 시 종료)");
 
-        countSpinner = new Spinner<Integer>(1, 200, 20);
+        countSpinner = new Spinner<>(1, 200, 20);
         countSpinner.setEditable(true);
 
         modeCombo = new ComboBox<>();
         modeCombo.getItems().addAll(Mode.MEANING, Mode.READING, Mode.MIX);
         modeCombo.getSelectionModel().select(Mode.MEANING);
 
-        timeoutSpinner = new Spinner<Integer>(5, 300, 30);
+        timeoutSpinner = new Spinner<>(5, 300, 30);
         timeoutSpinner.setEditable(true);
 
         startBtn = new Button("시작");
@@ -221,12 +210,8 @@ public class HanjaFXApp extends Application {
         quizLabel.getStyleClass().add("question");
         timerLabel = new Label("남은 시간: --초");
 
-        answerField = new TextField();
-        answerField.getStyleClass().add("text-input");
-        answerField.setPromptText("정답을 입력하세요 (exit 입력 시 종료)");
-
         submitBtn = new Button("제출"); submitBtn.getStyleClass().add("primary-btn");
-        exitBtn   = new Button("종료"); exitBtn.getStyleClass().add("danger-btn");
+        exitBtn   = new Button("종료");  exitBtn.getStyleClass().add("danger-btn");
 
         HBox actions = new HBox(8, submitBtn, exitBtn);
         quizPane = new VBox(12, quizLabel, timerLabel, answerField, actions);
@@ -364,36 +349,37 @@ public class HanjaFXApp extends Application {
         show(Screen.HOME);
     }
 
-    /* ---------------- CARDS ---------------- */
     private VBox buildCardsScreen() {
         if (cardsRoot != null) return cardsRoot;
 
-        if (allData.isEmpty()) {
-            var repo = new JsonHanjaRepository();
-            allData = repo.findAll();
-            availableLevels = allData.stream().map(Hanja::getLevel).distinct()
-                    .sorted(Comparator.naturalOrder()).toList();
-        }
+        var repo = new JsonHanjaRepository();
+        allData = repo.findAll();
+        availableLevels = allData.stream()
+                .map(Hanja::getLevel)
+                .filter(lv -> lv != null && !lv.isBlank())
+                .distinct()
+                .sorted(Comparator.naturalOrder())
+                .toList();
 
-        levelToggles = new FlowPane(8, 8);
-        levelToggles.setPrefWrapLength(600);
-        for (String lv : availableLevels) {
-            ToggleButton t = new ToggleButton(lv);
-            t.getStyleClass().add("chip");
-            t.setUserData(lv);
-            levelToggles.getChildren().add(t);
-        }
-        cardsStartBtn = new Button("시작하기");
-        cardsStartBtn.getStyleClass().add("primary-btn");
+        levelCombo = new ComboBox<>();
+        levelCombo.getItems().add("전체");
+        levelCombo.getItems().addAll(availableLevels);
+        levelCombo.getSelectionModel().selectFirst();
+        levelCombo.setOnAction(e -> updateCardsForSelectedLevel());
 
-        favOnlyCheck = new CheckBox("즐겨찾기만");
-        HBox header = new HBox(10, levelToggles, favOnlyCheck, cardsStartBtn);
-        header.setAlignment(Pos.CENTER_LEFT);
+        homeBtn = new Button("홈으로");
+        homeBtn.getStyleClass().add("danger-btn");
+        homeBtn.setOnAction(e -> { saveCardState(); show(Screen.HOME); });
+
+        Pane topSpacer = new Pane();
+        HBox.setHgrow(topSpacer, Priority.ALWAYS);
+        HBox topBar = new HBox(10, new Label("급수:"), levelCombo, topSpacer, homeBtn);
+        topBar.setAlignment(Pos.CENTER_LEFT);
 
         cardStack = new StackPane();
         cardStack.setMinSize(300, 220);
-        cardStack.setPrefSize(420, 300);
-        cardStack.setMaxWidth(520);
+        cardStack.setPrefSize(480, 320);
+        cardStack.setMaxWidth(560);
         cardStack.getStyleClass().add("card");
         cardStack.setPadding(new Insets(24));
         cardStack.setOnMouseClicked(e -> flipCard());
@@ -403,54 +389,53 @@ public class HanjaFXApp extends Application {
         cardStack.getChildren().setAll(frontNode, backNode);
         backNode.setVisible(false);
 
-        favToggleBtn = new ToggleButton("☆ 즐겨찾기");
-        favToggleBtn.setOnAction(e -> toggleFavorite());
-
         prevBtn = new Button("← 이전");
         nextBtn = new Button("다음 →");
-        homeBtn = new Button("홈으로");
-        homeBtn.getStyleClass().add("danger-btn");
-        prevBtn.setDisable(true); nextBtn.setDisable(true);
+        prevBtn.setOnAction(e -> showCard(cardIndex - 1, true));
+        nextBtn.setOnAction(e -> showCard(cardIndex + 1, true));
 
         cardsCounter = new Label("0 / 0");
         cardsCounter.getStyleClass().add("counter");
-        Pane spacer = new Pane(); HBox.setHgrow(spacer, Priority.ALWAYS);
-        HBox nav = new HBox(8, prevBtn, nextBtn, spacer, cardsCounter, favToggleBtn, homeBtn);
-        nav.setAlignment(Pos.CENTER_LEFT);
 
-        VBox layout = new VBox(12, new Label("낱말 카드"), header, cardStack, nav);
+        AnchorPane overlay = new AnchorPane();
+        HBox navRight = new HBox(8, prevBtn, nextBtn);
+        navRight.setAlignment(Pos.CENTER_RIGHT);
+        AnchorPane.setRightAnchor(navRight, 8.0);
+        AnchorPane.setBottomAnchor(navRight, 8.0);
+
+        Label counterLeft = cardsCounter;
+        AnchorPane.setLeftAnchor(counterLeft, 8.0);
+        AnchorPane.setBottomAnchor(counterLeft, 8.0);
+
+        overlay.getChildren().addAll(counterLeft, navRight);
+
+        cardArea = new StackPane(cardStack, overlay);
+
+        VBox layout = new VBox(12, new Label("낱말 카드"), topBar, cardArea);
         ((Label)layout.getChildren().get(0)).getStyleClass().add("title");
         layout.setPadding(new Insets(16));
 
         cardsRoot = new VBox(layout);
         cardsRoot.setFillWidth(true);
 
-        cardsStartBtn.setOnAction(e -> startCards());
-        prevBtn.setOnAction(e -> showCard(cardIndex - 1, true));
-        nextBtn.setOnAction(e -> showCard(cardIndex + 1, true));
-        homeBtn.setOnAction(e -> { saveCardState(); show(Screen.HOME); });
-        favOnlyCheck.setOnAction(e -> applyFavoriteFilterAndRefresh());
+        updateCardsForSelectedLevel();
 
         return cardsRoot;
     }
 
-    private void startCards() {
-        Set<String> selected = levelToggles.getChildren().stream()
-                .filter(n -> n instanceof ToggleButton tb && tb.isSelected())
-                .map(n -> (String) n.getUserData())
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        if (selected.isEmpty()) baseCardList = new ArrayList<>(allData);
-        else baseCardList = allData.stream().filter(h -> selected.contains(h.getLevel()))
-                .collect(Collectors.toList());
-
-        if (baseCardList.isEmpty()) {
-            showAlert(Alert.AlertType.INFORMATION, "데이터 없음", "선택한 급수의 한자가 없습니다.");
-            return;
+    private void updateCardsForSelectedLevel() {
+        String selected = levelCombo.getSelectionModel().getSelectedItem();
+        if (selected == null || selected.equals("전체")) {
+            baseCardList = new ArrayList<>(allData);
+        } else {
+            baseCardList = allData.stream()
+                    .filter(h -> selected.equals(h.getLevel()))
+                    .collect(Collectors.toList());
         }
-
         baseCardList.sort(Comparator.comparing(Hanja::getCharacter));
-        applyFavoriteFilterAndRefresh();
+        cardList = baseCardList;
+        cardIndex = Math.min(cardIndex, Math.max(0, cardList.size() - 1));
+        showingBack = false;
 
         CardState st = cardRepo.load();
         String last = st.lastCharacter();
@@ -458,20 +443,7 @@ public class HanjaFXApp extends Application {
             int found = indexOfCharacter(cardList, last);
             if (found >= 0) cardIndex = found;
         }
-        showingBack = false;
-        refreshCard();
-        updateNavButtons();
-    }
 
-    private void applyFavoriteFilterAndRefresh() {
-        if (favOnlyCheck.isSelected()) {
-            cardList = baseCardList.stream()
-                    .filter(h -> favorites.contains(h.getCharacter()))
-                    .collect(Collectors.toList());
-        } else {
-            cardList = baseCardList;
-        }
-        cardIndex = Math.min(cardIndex, Math.max(0, cardList.size() - 1));
         refreshCard();
         updateNavButtons();
     }
@@ -480,14 +452,12 @@ public class HanjaFXApp extends Application {
         if (cardList.isEmpty()) {
             cardsCounter.setText("0 / 0");
             prevBtn.setDisable(true); nextBtn.setDisable(true);
-            favToggleBtn.setDisable(true);
             frontNode = buildFront(null);
             backNode  = buildBack(null);
             cardStack.getChildren().setAll(frontNode, backNode);
             backNode.setVisible(false);
             return;
         }
-        favToggleBtn.setDisable(false);
 
         Hanja h = cardList.get(cardIndex);
         frontNode = buildFront(h);
@@ -495,10 +465,6 @@ public class HanjaFXApp extends Application {
         cardStack.getChildren().setAll(frontNode, backNode);
         frontNode.setVisible(!showingBack);
         backNode.setVisible(showingBack);
-
-        boolean fav = favorites.contains(h.getCharacter());
-        favToggleBtn.setSelected(fav);
-        favToggleBtn.setText(fav ? "★ 즐겨찾기 해제" : "☆ 즐겨찾기");
 
         cardsCounter.setText((cardIndex + 1) + " / " + cardList.size());
     }
@@ -537,15 +503,12 @@ public class HanjaFXApp extends Application {
         box.setAlignment(Pos.CENTER);
         Label ch = new Label(h == null ? "—" : h.getCharacter());
         ch.setStyle("-fx-font-size: 42px; -fx-font-weight: bold;");
-
         Label reading = new Label(h == null ? "-" : "음: " + h.getReading());
         Label meaning = new Label(h == null ? "-" : "뜻: " + h.getMeaning());
         reading.getStyleClass().add("title");
         meaning.getStyleClass().add("title");
-
         Label tip = new Label("다시 클릭하면 앞면으로 돌아갑니다");
         tip.getStyleClass().add("counter");
-
         box.getChildren().addAll(ch, reading, meaning, tip);
         return box;
     }
@@ -558,7 +521,6 @@ public class HanjaFXApp extends Application {
             showingBack = !showingBack;
             frontNode.setVisible(!showingBack);
             backNode.setVisible(showingBack);
-
             ScaleTransition in = new ScaleTransition(Duration.millis(140), cardStack);
             in.setFromX(0); in.setToX(1);
             in.play();
@@ -566,23 +528,9 @@ public class HanjaFXApp extends Application {
         out.play();
     }
 
-    private void toggleFavorite() {
-        if (cardList.isEmpty()) return;
-        String ch = cardList.get(cardIndex).getCharacter();
-        if (favorites.contains(ch)) favorites.remove(ch);
-        else favorites.add(ch);
-
-        boolean fav = favorites.contains(ch);
-        favToggleBtn.setSelected(fav);
-        favToggleBtn.setText(fav ? "★ 즐겨찾기 해제" : "☆ 즐겨찾기");
-
-        if (favOnlyCheck.isSelected()) applyFavoriteFilterAndRefresh();
-        saveCardState();
-    }
-
     private void saveCardState() {
         String last = (cardList.isEmpty() ? null : cardList.get(cardIndex).getCharacter());
-        cardRepo.save(new CardState(last, favorites));
+        cardRepo.save(new CardState(last, Collections.emptySet()));
     }
 
     private int indexOfCharacter(List<Hanja> list, String ch) {
@@ -591,16 +539,14 @@ public class HanjaFXApp extends Application {
     }
 
     private void handleGlobalKeys(KeyEvent e) {
-        boolean onCards = !contentRoot.getChildren().isEmpty() && contentRoot.getChildren().get(0) == cardsRoot;
+        boolean onCards = (cardsRoot != null) && !contentRoot.getChildren().isEmpty() && contentRoot.getChildren().get(0) == cardsRoot;
         if (!onCards) return;
-
         switch (e.getCode()) {
             case RIGHT -> nextBtn.fire();
             case LEFT  -> prevBtn.fire();
             case SPACE -> flipCard();
-            case F     -> toggleFavorite();
             case ESCAPE-> { saveCardState(); show(Screen.HOME); }
-            default    -> { /* ignore */ }
+            default    -> {}
         }
     }
 
@@ -614,7 +560,6 @@ public class HanjaFXApp extends Application {
         List<Hanja> shuffled = new ArrayList<>(pool);
         Collections.shuffle(shuffled, new Random());
         List<Hanja> chosen = shuffled.subList(0, Math.min(cfg.count(), shuffled.size()));
-
         Random rng = new Random();
         List<Quiz> out = new ArrayList<>(chosen.size());
         for (Hanja h : chosen) {
