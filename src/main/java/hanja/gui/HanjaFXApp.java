@@ -67,6 +67,7 @@ public class HanjaFXApp extends Application {
     private StackPane cardArea;
     private StackPane cardStack;
     private Button prevBtn, nextBtn, homeBtn;
+    private Button quizHomeBtn;
     private Label cardsCounter;
 
     private List<Hanja> allData = List.of();
@@ -98,7 +99,7 @@ public class HanjaFXApp extends Application {
         root = new VBox(12, header, contentRoot);
         root.setPadding(new Insets(16));
 
-        Scene scene = new Scene(root, 820, 560);
+        Scene scene = new Scene(root, 820, 600);
         URL css = getClass().getResource("/ui/styles.css");
         if (css != null) scene.getStylesheets().add(css.toExternalForm());
 
@@ -133,6 +134,11 @@ public class HanjaFXApp extends Application {
         Label desc = new Label("원하는 학습을 선택하세요");
         desc.getStyleClass().add("counter");
 
+        VBox hero = new VBox(8, title, desc);
+        hero.getStyleClass().add("card");
+        hero.setPadding(new Insets(24));
+        hero.setAlignment(Pos.CENTER_LEFT);
+
         Button quizBtn = new Button("한자 퀴즈 시작");
         quizBtn.getStyleClass().add("primary-btn");
         quizBtn.setMaxWidth(Double.MAX_VALUE);
@@ -148,19 +154,35 @@ public class HanjaFXApp extends Application {
         HBox.setHgrow(quizBtn, Priority.ALWAYS);
         HBox.setHgrow(cardsBtn, Priority.ALWAYS);
 
-        VBox box = new VBox(12, title, desc, buttons);
-        box.getStyleClass().add("card");
-        box.setPadding(new Insets(24));
-        box.setAlignment(Pos.CENTER_LEFT);
+        VBox chooser = new VBox(12, buttons);
+        chooser.getStyleClass().add("card");
+        chooser.setPadding(new Insets(24));
+        chooser.setAlignment(Pos.CENTER_LEFT);
+
+        VBox container = new VBox(16, hero, chooser);
 
         BorderPane layout = new BorderPane();
-        layout.setCenter(box);
+        layout.setCenter(container);
 
         homePane = new VBox(layout);
         return homePane;
     }
 
     private VBox buildQuizScreen() {
+        quizHomeBtn = new Button("홈으로");
+        quizHomeBtn.getStyleClass().add("danger-btn");
+        quizHomeBtn.setOnAction(e -> {
+            if (timeline != null) timeline.stop();
+            show(Screen.HOME);
+        });
+
+        Pane topSpacer = new Pane();
+        HBox.setHgrow(topSpacer, Priority.ALWAYS);
+        Label quizTitle = new Label("퀴즈");
+        quizTitle.getStyleClass().add("title");
+        HBox topBar = new HBox(10, quizTitle, topSpacer, quizHomeBtn);
+        topBar.setAlignment(Pos.CENTER_LEFT);
+
         levelChip = chip("급수");
         typeChip  = chip("유형");
         counterLabel = new Label("Q 0 / 0");
@@ -237,7 +259,7 @@ public class HanjaFXApp extends Application {
             startQuiz(cfg);
         });
 
-        return new VBox(12, settingsPane, new Separator(), statusStrip, quizPane);
+        return new VBox(12, topBar, settingsPane, new Separator(), statusStrip, quizPane);
     }
 
     private void startQuiz(SessionConfig cfg) {
@@ -534,13 +556,14 @@ public class HanjaFXApp extends Application {
 
     private void handleGlobalKeys(KeyEvent e) {
         boolean onCards = (cardsRoot != null) && !contentRoot.getChildren().isEmpty() && contentRoot.getChildren().get(0) == cardsRoot;
-        if (!onCards) return;
-        switch (e.getCode()) {
-            case RIGHT -> nextBtn.fire();
-            case LEFT  -> prevBtn.fire();
-            case SPACE -> flipCard();
-            case ESCAPE-> { saveCardState(); show(Screen.HOME); }
-            default    -> {}
+        if (onCards) {
+            switch (e.getCode()) {
+                case RIGHT -> nextBtn.fire();
+                case LEFT  -> prevBtn.fire();
+                case SPACE -> flipCard();
+                case ESCAPE-> { saveCardState(); show(Screen.HOME); }
+                default    -> {}
+            }
         }
     }
 
