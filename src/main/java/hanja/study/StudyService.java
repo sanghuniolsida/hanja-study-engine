@@ -46,5 +46,4 @@ public class StudyService {
     }
 
     public UserProgress userProgress() { return userProgress; }
-    public List<Hanja> pool() { return pool; }
 }
