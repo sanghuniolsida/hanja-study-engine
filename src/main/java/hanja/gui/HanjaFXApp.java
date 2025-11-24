@@ -70,6 +70,12 @@ public class HanjaFXApp extends Application {
     private Button quizHomeBtn;
     private Label cardsCounter;
 
+    // 상단 필드 영역에 추가
+    private boolean mcqRequested = false;
+    private VBox mcqBox;
+    private ToggleGroup mcqGroup;
+    private List<RadioButton> mcqOptionButtons = new ArrayList<>(4);
+
     private List<Hanja> allData = List.of();
     private List<String> availableLevels = List.of();
     private List<Hanja> baseCardList = List.of();
@@ -143,24 +149,24 @@ public class HanjaFXApp extends Application {
         quizBtn.getStyleClass().add("primary-btn");
         quizBtn.setMaxWidth(Double.MAX_VALUE);
 
+        Button mcqBtn = new Button("4지선다 퀴즈");
+        mcqBtn.setMaxWidth(Double.MAX_VALUE);
+        mcqBtn.setOnAction(e -> { mcqRequested = true; show(Screen.QUIZ); });
+
         Button cardsBtn = new Button("낱말 카드 보기");
         cardsBtn.getStyleClass().add("danger-btn");
         cardsBtn.setMaxWidth(Double.MAX_VALUE);
 
-        quizBtn.setOnAction(e -> show(Screen.QUIZ));
+        quizBtn.setOnAction(e -> { mcqRequested = false; show(Screen.QUIZ); });
         cardsBtn.setOnAction(e -> show(Screen.CARDS));
 
-        HBox buttons = new HBox(12, quizBtn, cardsBtn);
-        HBox.setHgrow(quizBtn, Priority.ALWAYS);
-        HBox.setHgrow(cardsBtn, Priority.ALWAYS);
-
+        VBox buttons = new VBox(12, quizBtn, mcqBtn, cardsBtn);
         VBox chooser = new VBox(12, buttons);
         chooser.getStyleClass().add("card");
         chooser.setPadding(new Insets(24));
         chooser.setAlignment(Pos.CENTER_LEFT);
 
         VBox container = new VBox(16, hero, chooser);
-
         BorderPane layout = new BorderPane();
         layout.setCenter(container);
 
@@ -237,7 +243,7 @@ public class HanjaFXApp extends Application {
         exitBtn   = new Button("종료");  exitBtn.getStyleClass().add("danger-btn");
 
         HBox actions = new HBox(8, submitBtn, exitBtn);
-        quizPane = new VBox(12, quizLabel, timerLabel, answerField, actions);
+        quizPane = new VBox(12, quizLabel, timerLabel, answerField, mcqBox, actions);
         quizPane.getStyleClass().add("card");
         quizPane.setPadding(new Insets(16));
         quizPane.setVisible(false);
@@ -256,8 +262,23 @@ public class HanjaFXApp extends Application {
             Mode mode = modeCombo.getValue();
             int timeout = safeInt(timeoutSpinner.getValue(), 30);
             SessionConfig cfg = new SessionConfig(levels, count, timeout, mode, null);
-            startQuiz(cfg);
+            if (mcqRequested) startMcqQuiz(cfg);
+            else              startQuiz(cfg);
         });
+
+        // MCQ 옵션 박스 구성
+        mcqGroup = new ToggleGroup();
+        mcqBox = new VBox(8);
+        for (int i = 0; i < 4; i++) {
+            RadioButton rb = new RadioButton("(보기 없음)");
+            rb.setToggleGroup(mcqGroup);
+            rb.setWrapText(true);
+            rb.setMaxWidth(Double.MAX_VALUE);
+            mcqOptionButtons.add(rb);
+        }
+        mcqBox.getChildren().addAll(mcqOptionButtons);
+        mcqBox.setVisible(false);
+        mcqBox.setManaged(false);
 
         return new VBox(12, topBar, settingsPane, new Separator(), statusStrip, quizPane);
     }
