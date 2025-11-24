@@ -4,6 +4,7 @@ import hanja.domain.Hanja;
 import hanja.domain.JsonHanjaRepository;
 import hanja.quiz.QuestionType;
 import hanja.quiz.Quiz;
+import hanja.quiz.McqQuizFactory;
 import hanja.ui.config.SessionConfig;
 import hanja.ui.config.SessionConfig.Mode;
 import hanja.ui.session.Attempt;
@@ -325,6 +326,32 @@ public class HanjaFXApp extends Application {
         });
         counterLabel.setText("Q " + (idx + 1) + " / " + total);
 
+        boolean isMcq = (q.type() == QuestionType.MCQ_TEXT_TO_HANJA
+                || q.type() == QuestionType.MCQ_HANJA_TO_TEXT);
+
+        answerField.clear();
+        answerField.setVisible(!isMcq);
+        answerField.setManaged(!isMcq);
+
+        mcqBox.setVisible(isMcq);
+        mcqBox.setManaged(isMcq);
+        if (isMcq) {
+            List<String> opts = q.options();
+            for (int i = 0; i < mcqOptionButtons.size(); i++) {
+                RadioButton rb = mcqOptionButtons.get(i);
+                if (i < opts.size()) {
+                    rb.setText(opts.get(i));
+                    rb.setVisible(true);
+                    rb.setManaged(true);
+                } else {
+                    rb.setText("");
+                    rb.setVisible(false);
+                    rb.setManaged(false);
+                }
+            }
+            mcqGroup.selectToggle(null);
+        }
+
         answerField.clear();
         remainSec = (int) timeoutSec;
         timeProgress.set(1.0);
@@ -345,8 +372,26 @@ public class HanjaFXApp extends Application {
         if (idx >= quizzes.size()) return;
         submitBtn.setDisable(true); exitBtn.setDisable(true); answerField.setDisable(true);
 
+        String ans;
         Quiz q = quizzes.get(idx);
-        String ans = timeout ? Attempt.TIMEOUT : answerField.getText().trim();
+        boolean isMcq = (q.type() == QuestionType.MCQ_TEXT_TO_HANJA
+                || q.type() == QuestionType.MCQ_HANJA_TO_TEXT);
+
+        if (timeout) {
+            ans = Attempt.TIMEOUT;
+        } else if (isMcq) {
+            Toggle sel = mcqGroup.getSelectedToggle();
+            if (sel == null) {
+                showToast("옵션을 하나 선택해 주세요.");
+                submitBtn.setDisable(false); exitBtn.setDisable(false);
+                answerField.setDisable(false);
+                return;
+            }
+            ans = ((RadioButton) sel).getText().trim();
+        } else {
+            ans = answerField.getText().trim();
+        }
+
         if (timeline != null) timeline.stop();
 
         if (!timeout && ans.equalsIgnoreCase("exit")) { finishSession(true); return; }
@@ -622,6 +667,45 @@ public class HanjaFXApp extends Application {
         }
         return out;
     }
+
+    private void startMcqQuiz(SessionConfig cfg) {
+        var repo = new JsonHanjaRepository();
+        List<Hanja> all = repo.findAll();
+
+        List<Hanja> filtered = all;
+        if (!cfg.levels().isEmpty()) {
+            Set<String> wanted = new HashSet<>(cfg.levels());
+            filtered = all.stream().filter(h -> wanted.contains(h.getLevel())).toList();
+        }
+        if (filtered.isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "데이터 없음", "선택한 급수의 한자 데이터가 없습니다.");
+            return;
+        }
+
+        Random rng = new Random();
+
+        int half = Math.max(1, cfg.count() / 2);
+        List<Quiz> a = McqQuizFactory.build(filtered, all, half, McqQuizFactory.Kind.TEXT_TO_HANJA, rng);
+        List<Quiz> b = McqQuizFactory.build(filtered, all, cfg.count() - half, McqQuizFactory.Kind.HANJA_TO_TEXT, rng);
+
+        List<Quiz> mixed = new ArrayList<>(a.size() + b.size());
+        int i = 0, j = 0;
+        while (i < a.size() || j < b.size()) {
+            if (i < a.size()) mixed.add(a.get(i++));
+            if (j < b.size()) mixed.add(b.get(j++));
+        }
+        Collections.shuffle(mixed, rng);
+
+        quizzes = mixed;
+        attempts = new ArrayList<>(quizzes.size());
+        idx = 0; correct = 0; total = quizzes.size();
+
+        settingsPane.setDisable(true);
+        quizPane.setVisible(true);
+
+        nextQuestion(cfg.timeoutSec());
+    }
+
 
     private static String answerOf(Quiz q) {
         return switch (q.type()) {
