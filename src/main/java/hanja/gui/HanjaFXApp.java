@@ -146,31 +146,31 @@ public class HanjaFXApp extends Application {
         hero.setAlignment(Pos.CENTER_LEFT);
 
         Button quizBtn = new Button("한자 퀴즈 시작");
-        quizBtn.getStyleClass().add("primary-btn");
+        quizBtn.getStyleClass().addAll("primary-btn", "home-btn", "btn-quiz");
         quizBtn.setMaxWidth(Double.MAX_VALUE);
 
         Button mcqBtn = new Button("4지선다 퀴즈");
-        mcqBtn.getStyleClass().add("primary-btn");
+        mcqBtn.getStyleClass().addAll("home-btn", "btn-mcq");
         mcqBtn.setMaxWidth(Double.MAX_VALUE);
         mcqBtn.setOnAction(e -> { mcqRequested = true; show(Screen.QUIZ); });
 
         Button cardsBtn = new Button("낱말 카드 보기");
-        cardsBtn.getStyleClass().add("danger-btn");
+        cardsBtn.getStyleClass().addAll("danger-btn", "home-btn", "btn-cards");
         cardsBtn.setMaxWidth(Double.MAX_VALUE);
 
         quizBtn.setOnAction(e -> { mcqRequested = false; show(Screen.QUIZ); });
         cardsBtn.setOnAction(e -> show(Screen.CARDS));
 
-        // 세로 배치
         VBox buttons = new VBox(12, quizBtn, mcqBtn, cardsBtn);
-        buttons.setFillWidth(true);
+        buttons.getStyleClass().add("home-actions");
 
         VBox chooser = new VBox(12, buttons);
-        chooser.getStyleClass().add("card");
+        chooser.getStyleClass().addAll("card", "home-card");
         chooser.setPadding(new Insets(24));
         chooser.setAlignment(Pos.CENTER_LEFT);
 
         VBox container = new VBox(16, hero, chooser);
+
         BorderPane layout = new BorderPane();
         layout.setCenter(container);
 
