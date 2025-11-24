@@ -1,5 +1,6 @@
 .root {
   -fx-font-family: "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", "Segoe UI", sans-serif;
+
   -color-bg: #ffffff;
   -color-card: #f9fafb;
   -color-border: #e5e7eb;
@@ -10,6 +11,13 @@
   -color-danger: #dc2626;
   -chip-bg: #eef2ff;
   -chip-fg: #3730a3;
+
+  -focus-color: rgba(37, 99, 235, 0.65);
+  -focus-faint: rgba(37, 99, 235, 0.15);
+
+  -radius-card: 12;
+  -radius-pill: 999;
+
   -fx-background-color: -color-bg;
   -fx-text-fill: -color-text;
 }
@@ -18,13 +26,17 @@
   -color-bg: #0b1220;
   -color-card: #0f172a;
   -color-border: #1f2937;
-  -color-text: #f5f7fb;           /* 기본 텍스트 톤(거의 흰색) */
+  -color-text: #f5f7fb;
   -color-muted: #c7d2fe;
   -color-primary: #60a5fa;
   -color-success: #34d399;
   -color-danger: #f87171;
   -chip-bg: #1f2937;
   -chip-fg: #e5e7eb;
+
+  -focus-color: rgba(96, 165, 250, 0.8);
+  -focus-faint: rgba(96, 165, 250, 0.18);
+
   -fx-background-color: -color-bg;
 }
 
@@ -32,25 +44,31 @@
   -fx-padding: 8 12;
   -fx-background-color: transparent;
 }
+.header .title {
+  -fx-font-size: 18px;
+  -fx-font-weight: bold;
+}
 
 .card {
   -fx-background-color: -color-card;
-  -fx-background-radius: 12;
+  -fx-background-radius: -radius-card;
   -fx-border-color: -color-border;
-  -fx-border-radius: 12;
+  -fx-border-radius: -radius-card;
   -fx-padding: 16;
+  -fx-effect: dropshadow(gaussian, rgba(17,24,39,0.08), 14, 0.12, 0, 4);
+}
+.root.dark .card {
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 18, 0.25, 0, 6);
 }
 
 .title {
   -fx-font-size: 18px;
   -fx-font-weight: bold;
 }
-
 .question {
   -fx-font-size: 22px;
   -fx-font-weight: bold;
 }
-
 .counter {
   -fx-text-fill: -color-muted;
   -fx-font-size: 13px;
@@ -60,33 +78,157 @@
 .chip {
   -fx-background-color: -chip-bg;
   -fx-text-fill: -chip-fg;
-  -fx-background-radius: 999;
+  -fx-background-radius: -radius-pill;
   -fx-padding: 4 10;
   -fx-font-size: 12px;
   -fx-font-weight: 700;
 }
 
+.button {
+  -fx-background-radius: 8;
+  -fx-padding: 10 14;
+  -fx-font-weight: 600;
+  -fx-cursor: hand;
+  -fx-focus-color: -focus-color;
+  -fx-faint-focus-color: -focus-faint;
+  -fx-text-fill: -color-text;
+  -fx-background-insets: 0, 1;
+}
+.button:hover { -fx-opacity: 0.95; }
+.button:pressed { -fx-translate-y: 1; }
+.button:disabled { -fx-opacity: 0.6; }
+
 .primary-btn {
   -fx-background-color: -color-primary;
   -fx-text-fill: white;
-  -fx-background-radius: 8;
 }
+.primary-btn:hover { -fx-background-color: derive(-color-primary, -6%); }
+.primary-btn:pressed { -fx-background-color: derive(-color-primary, -10%); }
+
 .danger-btn {
   -fx-background-color: -color-danger;
   -fx-text-fill: white;
-  -fx-background-radius: 8;
+}
+.danger-btn:hover { -fx-background-color: derive(-color-danger, -6%); }
+.danger-btn:pressed { -fx-background-color: derive(-color-danger, -10%); }
+
+/* 토글 버튼(다크모드 스위치 등) */
+.toggle-button {
+  -fx-background-color: transparent;
+  -fx-border-color: -color-border;
+  -fx-border-radius: 12;
+  -fx-background-radius: 12;
+  -fx-padding: 6 12;
+}
+.toggle-button:selected {
+  -fx-background-color: -color-card;
+  -fx-border-color: -color-primary;
+  -fx-text-fill: -color-primary;
 }
 
-.text-input {
+.text-input, .text-field {
   -fx-font-size: 16px;
   -fx-background-radius: 8;
-  -fx-text-fill: -color-text;            /* 라이트 모드 텍스트 */
+  -fx-text-fill: -color-text;
   -fx-prompt-text-fill: #9ca3af;
+  -fx-border-color: -color-border;
+  -fx-background-color: white;
+}
+.text-input:focused, .text-field:focused {
+  -fx-border-color: -color-primary;
+  -fx-background-color: white;
+  -fx-effect: dropshadow(gaussian, -focus-faint, 8, 0.2, 0, 0);
+}
+
+.root.dark .text-input,
+.root.dark .text-field {
+  -fx-background-color: -color-card;
+  -fx-border-color: -color-border;
+  -fx-prompt-text-fill: rgba(255,255,255,0.55);
+}
+.root.dark .text-input:focused,
+.root.dark .text-field:focused {
+  -fx-border-color: -color-primary;
+  -fx-background-color: -color-card;
+}
+
+/* ComboBox / Spinner 공통 톤 */
+.combo-box-base, .spinner {
+  -fx-background-color: white;
+  -fx-border-color: -color-border;
+  -fx-background-radius: 8;
+  -fx-border-radius: 8;
+}
+.combo-box-base:focused, .spinner:focused {
+  -fx-border-color: -color-primary;
+  -fx-effect: dropshadow(gaussian, -focus-faint, 8, 0.2, 0, 0);
+}
+.root.dark .combo-box-base, .root.dark .spinner {
+  -fx-background-color: -color-card;
   -fx-border-color: -color-border;
 }
 
+.spinner .increment-arrow-button, .spinner .decrement-arrow-button,
+.combo-box-base > .arrow-button {
+  -fx-background-color: transparent;
+  -fx-border-color: transparent;
+}
+.spinner .increment-arrow-button:hover, .spinner .decrement-arrow-button:hover,
+.combo-box-base > .arrow-button:hover {
+  -fx-background-color: rgba(0,0,0,0.04);
+}
+.root.dark .spinner .increment-arrow-button:hover,
+.root.dark .spinner .decrement-arrow-button:hover,
+.root.dark .combo-box-base > .arrow-button:hover {
+  -fx-background-color: rgba(255,255,255,0.06);
+}
+
+/* ========== ProgressBar (Timer) ========== */
+.timebar {
+  -fx-accent: -color-primary; /* fallback */
+}
+.timebar > .track {
+  -fx-background-color: -color-border;
+  -fx-background-radius: 6;
+}
 .timebar > .bar {
   -fx-background-color: -color-primary;
+  -fx-background-radius: 6;
+}
+.root.dark .timebar > .bar { -fx-background-color: -color-primary; }
+
+/* ========== Radio (MCQ) ========== */
+.radio-button {
+  -fx-padding: 8 10;
+  -fx-background-color: transparent;
+  -fx-background-radius: 8;
+  -fx-border-radius: 8;
+}
+.radio-button:hover {
+  -fx-background-color: rgba(0,0,0,0.035);
+}
+.root.dark .radio-button:hover {
+  -fx-background-color: rgba(255,255,255,0.05);
+}
+.radio-button:selected {
+  -fx-background-color: rgba(37,99,235,0.08);
+  -fx-border-color: rgba(37,99,235,0.25);
+}
+.root.dark .radio-button:selected {
+  -fx-background-color: rgba(96,165,250,0.12);
+  -fx-border-color: rgba(96,165,250,0.35);
+}
+.radio-button .text {
+  -fx-font-size: 14px;
+}
+.radio-button .radio {
+  -fx-mark-color: -color-primary; /* 체크 마크 색 */
+}
+
+.separator *.line {
+  -fx-background-color: -color-border;
+  -fx-border-style: solid;
+  -fx-border-width: 0;
 }
 
 .root.dark,
@@ -102,18 +244,16 @@
 .root.dark .text-field {
   -fx-text-fill: white;
 }
-
 .root.dark .counter { -fx-text-fill: #cbd5e1; }
-.root.dark .text-input,
-.root.dark .text-field,
-.root.dark .combo-box-base,
-.root.dark .spinner {
-  -fx-background-color: -color-card;
-  -fx-border-color: -color-border;
-  -fx-prompt-text-fill: rgba(255,255,255,0.55);
+
+.primary-btn, .danger-btn, .button {
+  -fx-pref-height: 40;
 }
 
-.root.dark .primary-btn,
-.root.dark .danger-btn { -fx-text-fill: white; }
+.card .image-view {
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0.2, 0, 2);
+  -fx-background-radius: 8;
+}
 
-.root.dark .timebar > .bar { -fx-background-color: -color-primary; }
+.card .title { -fx-padding: 0 0 6 0; }
+.card .question { -fx-padding: 4 0 6 0; }
