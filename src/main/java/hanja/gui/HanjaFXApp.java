@@ -299,6 +299,8 @@ public class HanjaFXApp extends Application {
             case HANJA_TO_MEANING -> "뜻";
             case HANJA_TO_READING -> "음";
             case MEANING_TO_HANJA -> "한자";
+            case MCQ_TEXT_TO_HANJA -> "객관식(한자)";
+            case MCQ_HANJA_TO_TEXT -> "객관식(뜻/음)";
         });
         counterLabel.setText("Q " + (idx + 1) + " / " + total);
 
@@ -360,6 +362,8 @@ public class HanjaFXApp extends Application {
                     case HANJA_TO_MEANING -> "뜻";
                     case HANJA_TO_READING -> "음";
                     case MEANING_TO_HANJA -> "한자";
+                    case MCQ_TEXT_TO_HANJA -> "객관식(한자)";
+                    case MCQ_HANJA_TO_TEXT -> "객관식(뜻/음)";
                 };
                 String your = Attempt.TIMEOUT.equals(a.userAnswer()) ? "⏰ 시간 초과" : a.userAnswer();
                 sb.append(String.format("%2d) [%s] (%s) %s → 정답: %s | 내 답: %s%n",
@@ -603,6 +607,13 @@ public class HanjaFXApp extends Application {
             case HANJA_TO_MEANING -> q.hanja().getMeaning();
             case MEANING_TO_HANJA -> q.hanja().getCharacter();
             case HANJA_TO_READING -> q.hanja().getReading();
+            case MCQ_TEXT_TO_HANJA, MCQ_HANJA_TO_TEXT -> {
+                try {
+                    yield q.options().get(q.correctIndex());
+                } catch (Exception e) {
+                    yield "(정답 정보 없음)";
+                }
+            }
         };
     }
 
@@ -610,6 +621,8 @@ public class HanjaFXApp extends Application {
         return switch (q.type()) {
             case HANJA_TO_MEANING, HANJA_TO_READING -> q.hanja().getCharacter();
             case MEANING_TO_HANJA -> q.hanja().getMeaning();
+            case MCQ_HANJA_TO_TEXT -> q.hanja().getCharacter();
+            case MCQ_TEXT_TO_HANJA -> q.hanja().getMeaning() + " / " + q.hanja().getReading();
         };
     }
 
