@@ -96,7 +96,13 @@ public final class SessionRunner {
         return switch (q.type()) {
             case HANJA_TO_MEANING -> q.hanja().getMeaning();
             case MEANING_TO_HANJA -> q.hanja().getCharacter();
-            case HANJA_TO_READING -> q.hanja().getReading();
+            case HANJA_TO_READING -> q.hanja().getReading();case MCQ_TEXT_TO_HANJA, MCQ_HANJA_TO_TEXT -> {
+                try {
+                    yield q.options().get(q.correctIndex());
+                } catch (Exception e) {
+                    yield "(정답 정보 없음)";
+                }
+            }
         };
     }
 }
