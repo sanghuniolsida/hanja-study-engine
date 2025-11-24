@@ -133,16 +133,7 @@ src/main/resources/hanja-data.json
   <img src="images/hanjaQuizMiss.png" width="45%" />
 </p>
 
-3. **낱말 카드 (한자 / 뜻·음)**
-
-학습하고자 하는 한자 급수 선택 후, 낱말 카드로 학습.
-
-<p align="center">
-  <img src="images/hanjaCard1.png" width="45%" />
-  <img src="images/hanjaCard2.png" width="45%" />
-</p>
-
-4. **4지선다 한자 퀴즈**
+3. **4지선다 한자 퀴즈**
 
 한자 → 뜻/음 또는 뜻/음 → 한자 형식의 4지선다 퀴즈 학습.
 
@@ -151,7 +142,14 @@ src/main/resources/hanja-data.json
   <img src="images/hanjaMcq2.png" width="45%" />
 </p>
 
+4. **낱말 카드 (한자 / 뜻·음)**
 
+학습하고자 하는 한자 급수 선택 후, 낱말 카드로 학습.
+
+<p align="center">
+  <img src="images/hanjaCard1.png" width="45%" />
+  <img src="images/hanjaCard2.png" width="45%" />
+</p>
 
 ---
 # 👐오픈 미션
