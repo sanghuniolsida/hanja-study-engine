@@ -3,7 +3,7 @@
 자바로 구현하는 한자 학습 엔진.
 
 - 한자 JSON 로드 → 문제 생성(뜻/음/섞기)
-- 4지선다 퀴즈 제공
+- 4지선다(MCQ) 퀴즈(텍스트↔한자)
 - 30초 카운트다운 타이머 + exit로 중도 종료
 - 세션 종료 시 오답 요약 일괄 출력
 - 출제 규칙은 전략(Strategy)으로 교체 가능
@@ -21,6 +21,7 @@
     - [x] 제한 시간(기본 30초) 진행바/남은 시간 표시
     - [x] `exit` 입력 시 즉시 종료
     - [x] 퀴즈 종료 시 오답 요약 팝업/출력
+    - [x] 4지선다(MCQ): McqQuizFactory를 통해 텍스트→한자 / 한자→텍스트
 - 학습 진행
     - [x] `LearningRecord`, `UserProgress`(정답/오답 기록, 재출제 여부 판정)
     - [x] `StudyService`
@@ -35,6 +36,7 @@
     - [x] 제목/설명 카드와 선택 버튼 카드 두 섹션으로 분리
     - [x] 급수 드롭다운으로 필터
     - [x] 카드 클릭 시 앞/뒷면 플립 애니메이션
+    - [x] 4지선다(MCQ) 라디오 버튼 UI + 자동 오답 보기 생성
     - [x] 이전, 다음 버튼 양 끝에서 순환 이동
 - 테스트
     - [x] `JsonHanjaRepository` 로딩 테스트
@@ -111,49 +113,44 @@ src/main/resources/hanja-data.json
 
 ## 사용 방법
 
-1. **홈**
+1. **홈 화면(라이트/다크)**
 
-한자 학습 엔진인 `한자 쏙!쏙!`에서 두 가지 학습 방법 중 하나를 선택.
+한자 학습 엔진인 `한자 쏙!쏙!`에서 세 가지 학습 방법 중 하나를 선택.
 
-![메인 화면](images/home.png)
+<p align="center">
+  <img src="images/homeLight.png" width="45%" />
+  <img src="images/homeDark.png" width="45%" />
+</p>
 
-2. **한자 퀴즈 시작**
+2. **한자 퀴즈 / 오답 정리**
 
 학습하고자 하는 한자 급수와 문항 개수, 모드를 선택.
 
 ※ 급수 입력은 다음과 같은 형태로 입력 → 7급, 8급
 
-![한자 퀴즈 화면](images/hanjaquiz.png)
+<p align="center">
+  <img src="images/hanjaQuiz.png" width="45%" />
+  <img src="images/hanjaQuizMiss.png" width="45%" />
+</p>
 
-3. **한자 퀴즈**
-
-정답을 입력하거나 `exit` 입력 또는 종료 버튼 클릭시 종료.
-
-![한자 퀴즈 화면](images/quiz.png) 
-
-4. **한자 퀴즈 오답**
-
-퀴즈 풀이가 끝난 후, 정리된 오답을 통해 재학습.
-
-![한자 퀴즈 화면](images/miscorrect.png)
-
-5. **낱말 카드 (한자)**
+3. **낱말 카드 (한자 / 뜻·음)**
 
 학습하고자 하는 한자 급수 선택 후, 낱말 카드로 학습.
 
-![낱말 카드 화면1](images/hanjacard1.png)
+<p align="center">
+  <img src="images/hanjaCard1.png" width="45%" />
+  <img src="images/hanjaCard2.png" width="45%" />
+</p>
 
-6. **낱말 카드 (뜻/음)**
+4. **4지선다 한자 퀴즈**
 
-낱말 카드 클릭시 카드가 회전하며 뜻/음 제공.
+한자 → 뜻/음 또는 뜻/음 → 한자 형식의 4지선다 퀴즈 학습.
 
-![낱말 카드 화면2](images/hanjacard2.png)
+<p align="center">
+  <img src="images/hanjaMcq.png" width="45%" />
+  <img src="images/hanjaMcq2.png" width="45%" />
+</p>
 
-7. **다크 모드**
-
-사용자 취향에 따라 `light` 또는 `dark` 모드 변경.
-
-![다크 모드](images/darkmode.png)
 
 
 ---
