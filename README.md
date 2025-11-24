@@ -3,6 +3,7 @@
 자바로 구현하는 한자 학습 엔진.
 
 - 한자 JSON 로드 → 문제 생성(뜻/음/섞기)
+- 4지선다 퀴즈 제공
 - 30초 카운트다운 타이머 + exit로 중도 종료
 - 세션 종료 시 오답 요약 일괄 출력
 - 출제 규칙은 전략(Strategy)으로 교체 가능
@@ -54,7 +55,7 @@
 ## 디렉터리 구조 
     hanja
     ├─ domain/    (Hanja, HanjaRepository, JsonHanjaRepository)
-    ├─ quiz/      (Quiz, QuestionType, QuizStrategy, RandomQuizStrategy, MistakeFirstStrategy)
+    ├─ quiz/      (Quiz, QuestionType, QuizStrategy, RandomQuizStrategy, McqQuizFactory, MistakeFirstStrategy)
     ├─ study/     (LearningRecord, UserProgress, StudyService)
     ├─ storage/   (ProgressRepository, FileProgressRepository)
     ├─ util/      (AnswerNormalizer, AsyncLineReader, TimedPrompt)                  // 입력/카운트다운 유틸
