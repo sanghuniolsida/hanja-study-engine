@@ -71,11 +71,10 @@ public class HanjaFXApp extends Application {
     private Button quizHomeBtn;
     private Label cardsCounter;
 
-    // 상단 필드 영역에 추가
     private boolean mcqRequested = false;
     private VBox mcqBox;
     private ToggleGroup mcqGroup;
-    private List<RadioButton> mcqOptionButtons = new ArrayList<>(4);
+    private final List<RadioButton> mcqOptionButtons = new ArrayList<>(4);
 
     private List<Hanja> allData = List.of();
     private List<String> availableLevels = List.of();
@@ -151,6 +150,7 @@ public class HanjaFXApp extends Application {
         quizBtn.setMaxWidth(Double.MAX_VALUE);
 
         Button mcqBtn = new Button("4지선다 퀴즈");
+        mcqBtn.getStyleClass().add("primary-btn");
         mcqBtn.setMaxWidth(Double.MAX_VALUE);
         mcqBtn.setOnAction(e -> { mcqRequested = true; show(Screen.QUIZ); });
 
@@ -161,7 +161,10 @@ public class HanjaFXApp extends Application {
         quizBtn.setOnAction(e -> { mcqRequested = false; show(Screen.QUIZ); });
         cardsBtn.setOnAction(e -> show(Screen.CARDS));
 
+        // 세로 배치
         VBox buttons = new VBox(12, quizBtn, mcqBtn, cardsBtn);
+        buttons.setFillWidth(true);
+
         VBox chooser = new VBox(12, buttons);
         chooser.getStyleClass().add("card");
         chooser.setPadding(new Insets(24));
@@ -243,6 +246,21 @@ public class HanjaFXApp extends Application {
         submitBtn = new Button("제출"); submitBtn.getStyleClass().add("primary-btn");
         exitBtn   = new Button("종료");  exitBtn.getStyleClass().add("danger-btn");
 
+        mcqGroup = new ToggleGroup();
+        mcqBox = new VBox(8);
+        mcqBox.setVisible(false);
+        mcqBox.setManaged(false);
+        mcqOptionButtons.clear();
+        for (int i = 0; i < 4; i++) {
+            RadioButton rb = new RadioButton("(보기 없음)");
+            rb.setToggleGroup(mcqGroup);
+            rb.setWrapText(true);
+            rb.setMaxWidth(Double.MAX_VALUE);
+            rb.setUserData(i);
+            mcqOptionButtons.add(rb);
+        }
+        mcqBox.getChildren().addAll(mcqOptionButtons);
+
         HBox actions = new HBox(8, submitBtn, exitBtn);
         quizPane = new VBox(12, quizLabel, timerLabel, answerField, mcqBox, actions);
         quizPane.getStyleClass().add("card");
@@ -254,7 +272,18 @@ public class HanjaFXApp extends Application {
         exitBtn.setOnAction(e -> finishSession(true));
 
         root.getScene().setOnKeyPressed(ev -> {
-            if (ev.getCode() == KeyCode.ESCAPE && quizPane.isVisible()) finishSession(true);
+            if (quizPane.isVisible() && ev.getCode() == KeyCode.ESCAPE) {
+                finishSession(true);
+                return;
+            }
+            if (!quizPane.isVisible() || !mcqBox.isVisible()) return;
+            switch (ev.getCode()) {
+                case DIGIT1, NUMPAD1 -> selectMcqIndex(0);
+                case DIGIT2, NUMPAD2 -> selectMcqIndex(1);
+                case DIGIT3, NUMPAD3 -> selectMcqIndex(2);
+                case DIGIT4, NUMPAD4 -> selectMcqIndex(3);
+                case ENTER -> submitBtn.fire();
+            }
         });
 
         startBtn.setOnAction(e -> {
@@ -266,20 +295,6 @@ public class HanjaFXApp extends Application {
             if (mcqRequested) startMcqQuiz(cfg);
             else              startQuiz(cfg);
         });
-
-        // MCQ 옵션 박스 구성
-        mcqGroup = new ToggleGroup();
-        mcqBox = new VBox(8);
-        for (int i = 0; i < 4; i++) {
-            RadioButton rb = new RadioButton("(보기 없음)");
-            rb.setToggleGroup(mcqGroup);
-            rb.setWrapText(true);
-            rb.setMaxWidth(Double.MAX_VALUE);
-            mcqOptionButtons.add(rb);
-        }
-        mcqBox.getChildren().addAll(mcqOptionButtons);
-        mcqBox.setVisible(false);
-        mcqBox.setManaged(false);
 
         return new VBox(12, topBar, settingsPane, new Separator(), statusStrip, quizPane);
     }
@@ -352,7 +367,6 @@ public class HanjaFXApp extends Application {
             mcqGroup.selectToggle(null);
         }
 
-        answerField.clear();
         remainSec = (int) timeoutSec;
         timeProgress.set(1.0);
         updateTimerLabel();
@@ -706,7 +720,6 @@ public class HanjaFXApp extends Application {
         nextQuestion(cfg.timeoutSec());
     }
 
-
     private static String answerOf(Quiz q) {
         return switch (q.type()) {
             case HANJA_TO_MEANING -> q.hanja().getMeaning();
@@ -767,6 +780,12 @@ public class HanjaFXApp extends Application {
         t.setFromX(24);
         t.setToX(0);
         t.play();
+    }
+
+    private void selectMcqIndex(int idx) {
+        if (!mcqBox.isVisible()) return;
+        if (idx < 0 || idx >= mcqOptionButtons.size()) return;
+        mcqGroup.selectToggle(mcqOptionButtons.get(idx));
     }
 
     public static void main(String[] args) { launch(args); }
