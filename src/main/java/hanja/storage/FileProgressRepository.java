@@ -11,14 +11,7 @@ import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * 진행도를 간단한 JSON 파일로 저장/복원한다.
- * 포맷 예:
- * {
- *   "人": {"attempts":2,"correct":1,"lastReviewedEpochDay":20290,"lastCorrect":true},
- *   "力": {"attempts":1,"correct":0,"lastReviewedEpochDay":20290,"lastCorrect":false}
- * }
- */
+
 public class FileProgressRepository implements ProgressRepository {
 
     private static final String DEFAULT_FILE = "progress.json";

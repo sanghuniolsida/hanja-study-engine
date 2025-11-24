@@ -52,7 +52,7 @@ class StudyServiceTest {
             boolean ok = q.hanja().getCharacter().equals("人");
             svc.record(q, ok, LocalDate.now());
         }
-        svc.endSession(); // save to repo
+        svc.endSession();
 
         Map<String, LearningRecord> saved = mem.load();
         assertThat(saved.get("人").isLastCorrect()).isTrue();
